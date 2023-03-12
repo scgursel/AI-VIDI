@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Testdb</string>
+    <string name="checkBoxForSwipe">.com.example.testapp.swipeCheckBox</string>
+</resources>
