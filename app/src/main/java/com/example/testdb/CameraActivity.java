@@ -4,6 +4,8 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.media.ThumbnailUtils;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,11 +17,21 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.testdb.ml.Model;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.text.Text;
+import com.google.mlkit.vision.text.TextRecognition;
+import com.google.mlkit.vision.text.TextRecognizer;
+import com.google.mlkit.vision.text.TextRecognizerOptions;
 
 import org.tensorflow.lite.DataType;
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
@@ -49,7 +61,7 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
     TextView result;
     int imageH= 512;
     int imageW= 512;
-
+    Bitmap imageBitmap;
 
 
     //
@@ -119,7 +131,7 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
 
 
 
-    public void classifyImage(Bitmap image){
+    /*public void classifyImage(Bitmap image){
         try {
             Model model = Model.newInstance(getApplicationContext());
 
@@ -179,7 +191,7 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
         } catch (IOException e) {
             // TODO Handle the exception
         }
-    }
+    }*/
 
 
 
@@ -214,6 +226,7 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
                     startActivity(new Intent(this,SettingsActivity.class));
                     break;
                 case "fotoğraf çek":
+                case "Fotoğraf çek":
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                             Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -234,15 +247,13 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
         //region classification import
         if(resultCode == RESULT_OK){
             if(requestCode == 3){
-                Bitmap image = (Bitmap) data.getExtras().get("data");
-                int dimension = Math.min(image.getWidth(), image.getHeight());
-                image = ThumbnailUtils.extractThumbnail(image, dimension, dimension);
-                imageView.setImageBitmap(image);
-
-                image = Bitmap.createScaledBitmap(image, imageW, imageH, false);
-                classifyImage(image);
+                Bundle bundle = data.getExtras();
+                imageBitmap = (Bitmap) bundle.get("data");
+                imageView.setImageBitmap(imageBitmap);
+                detectText();
             }
         }
+
         super.onActivityResult(requestCode, resultCode, data);
         //endregion
 
@@ -250,7 +261,39 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
 
     }
 
+    private void detectText(){
+        InputImage image = InputImage.fromBitmap(imageBitmap, 0);
+        TextRecognizer recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
+        Task<Text> rs = recognizer.process(image).addOnSuccessListener(new OnSuccessListener<Text>() {
+            @Override
+            public void onSuccess(Text text) {
+                StringBuilder rs = new StringBuilder();
+                for (Text.TextBlock block: text.getTextBlocks()){
+                    String blockText = block.getText();
+                    Point[] blockCornerPoint = block.getCornerPoints();
+                    Rect blockFramae = block.getBoundingBox();
+                    for (Text.Line line : block.getLines()){
+                        String lineText  = line.getText();
+                        Point[] lineCornerPoint = line.getCornerPoints();
+                        Rect linRect = line.getBoundingBox();
+                        for(Text.Element element : line.getElements()){
+                            String elementText = element.getText();
+                            rs.append(elementText);
+                        }
+                        result.setText(blockText);
 
+                    }
+                }
+
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(CameraActivity.this, "fail to text recogg: "+ e.getMessage(),Toast.LENGTH_SHORT);
+            }
+        });
+
+    }
 // public void capturePhoto(){
 // Intent intent=new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
