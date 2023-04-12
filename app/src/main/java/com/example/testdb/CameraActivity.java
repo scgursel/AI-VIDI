@@ -251,6 +251,8 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
                 imageBitmap = (Bitmap) bundle.get("data");
                 imageView.setImageBitmap(imageBitmap);
                 detectText();
+                //classifyImage();
+
             }
         }
 
