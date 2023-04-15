@@ -131,7 +131,7 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
 
 
 
-    /*public void classifyImage(Bitmap image){
+    public void classifyImage(Bitmap image){
         try {
             Model model = Model.newInstance(getApplicationContext());
 
@@ -191,7 +191,7 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
         } catch (IOException e) {
             // TODO Handle the exception
         }
-    }*/
+    }
 
 
 
@@ -236,6 +236,16 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
                         }
                     }
                     break;
+                case "Belge":
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                            Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                            startActivityForResult(cameraIntent, 2);
+                        } else {
+                            requestPermissions(new String[]{Manifest.permission.CAMERA}, 100);
+                        }
+                    }
+                    break;
                 default:
                     narrator3.speak("Anlaşılmadı, tekrar söyleyin.", TextToSpeech.QUEUE_FLUSH, null);
                     break;
@@ -252,6 +262,15 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
                 imageView.setImageBitmap(imageBitmap);
                 detectText();
                 //classifyImage();
+
+            }
+        }
+        if(resultCode == 2){
+            if(requestCode == 3){
+                Bundle bundle = data.getExtras();
+                imageBitmap = (Bitmap) bundle.get("data");
+                imageView.setImageBitmap(imageBitmap);
+                classifyImage(imageBitmap);
 
             }
         }
