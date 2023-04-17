@@ -289,7 +289,7 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
     private void detectText(){
         InputImage image = InputImage.fromBitmap(imageBitmap, 0);
         TextRecognizer recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
-        final String[] finalBlockText = {null};
+        final String blockText = null;
         Task<Text> rs = recognizer.process(image).addOnSuccessListener(new OnSuccessListener<Text>() {
             @Override
             public void onSuccess(Text text) {
@@ -307,20 +307,31 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
                             String elementText = element.getText();
                             rs.append(elementText);
                         }
+
                         result.setText(blockText);
                     }
                 }
-                narrator3.speak("Okunulan değer"+blockText, TextToSpeech.QUEUE_FLUSH, null);
+
                 String filename = "deneme";
                 SaveText saveText = new SaveText(blockText, filename);
                 SaveTextRepository saveTextRepository = new SaveTextRepository(getApplicationContext());
                 saveTextRepository.InsertTask(saveText);
             }
-
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 Toast.makeText(CameraActivity.this, "fail to text recogg: "+ e.getMessage(),Toast.LENGTH_SHORT);
+            }
+        });
+
+        narrator=new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int i) {
+                if(i!=TextToSpeech.ERROR) {
+                    Locale locale = new Locale("tr", "TR");
+                    narrator.setLanguage(locale);
+                    narrator.speak("Okunulan değer"+ blockText, TextToSpeech.QUEUE_FLUSH,null);
+                }
             }
         });
 
