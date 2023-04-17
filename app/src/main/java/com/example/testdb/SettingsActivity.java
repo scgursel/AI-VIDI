@@ -72,6 +72,13 @@ public class SettingsActivity extends AppCompatActivity {
         });
     }
 
+    public void onPause() {
+        if(narrator2 !=null){
+            narrator2.stop();
+            narrator2.shutdown();
+        }
+        super.onPause();
+    }
 
 
     //region swipes

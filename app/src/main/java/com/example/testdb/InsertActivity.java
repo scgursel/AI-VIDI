@@ -111,6 +111,7 @@ public class InsertActivity extends AppCompatActivity {
     }
 
 
+
     class ınsertpageSwipeHandler extends GestureDetector.SimpleOnGestureListener{
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {

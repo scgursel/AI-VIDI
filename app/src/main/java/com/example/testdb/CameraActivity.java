@@ -47,7 +47,7 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
     //
     // EARLIER ISSUE WAS WITH CAMERA PERMISSIONS. NOW FIXED
     // STILL GOTTA WORK ON PERMS, CURRENTLY REQUIRED TO ACCEPT PERMS THE FIRST TIME, HARD IF YOU ARE BLIND, CHECK PERMISSION OVERRIDES.
-    private TextToSpeech narrator3,narrator;
+    private TextToSpeech narrator3,narrator,narrator7;
     private String narration=("Kamerayı başlatmak için ekrana dokunun." +
             "Anasayfaya dönmek için anasayfa diyin." +
             "Kaydetmek için kaydetme işlemi diyin."+
@@ -105,10 +105,13 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
 
     }
 
-
-
-
-
+    public void onPause() {
+        if(narrator3 !=null){
+            narrator3.stop();
+            narrator3.shutdown();
+        }
+        super.onPause();
+    }
 
     public void recordVoice(View view){
 
@@ -198,12 +201,7 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
             // TODO Handle the exception
         }
     }
-
-
-
-
-
-
+    
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         //NEED TO ADD REQUEST CODE CHECKS HERE OR MAYHEM!
@@ -287,31 +285,38 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
 
     }
 
+
     private void detectText(){
         InputImage image = InputImage.fromBitmap(imageBitmap, 0);
         TextRecognizer recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
+        final String[] finalBlockText = {null};
         Task<Text> rs = recognizer.process(image).addOnSuccessListener(new OnSuccessListener<Text>() {
             @Override
             public void onSuccess(Text text) {
+                String blockText = null;
                 StringBuilder rs = new StringBuilder();
-                for (Text.TextBlock block: text.getTextBlocks()){
-                    String blockText = block.getText();
+                for (Text.TextBlock block : text.getTextBlocks()) {
+                    blockText = block.getText();
                     Point[] blockCornerPoint = block.getCornerPoints();
                     Rect blockFramae = block.getBoundingBox();
-                    for (Text.Line line : block.getLines()){
-                        String lineText  = line.getText();
+                    for (Text.Line line : block.getLines()) {
+                        String lineText = line.getText();
                         Point[] lineCornerPoint = line.getCornerPoints();
                         Rect linRect = line.getBoundingBox();
-                        for(Text.Element element : line.getElements()){
+                        for (Text.Element element : line.getElements()) {
                             String elementText = element.getText();
                             rs.append(elementText);
                         }
                         result.setText(blockText);
-
                     }
                 }
-
+                narrator3.speak("Okunulan değer"+blockText, TextToSpeech.QUEUE_FLUSH, null);
+                String filename = "deneme";
+                SaveText saveText = new SaveText(blockText, filename);
+                SaveTextRepository saveTextRepository = new SaveTextRepository(getApplicationContext());
+                saveTextRepository.InsertTask(saveText);
             }
+
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {

@@ -63,6 +63,16 @@ public class ViewActivity extends AppCompatActivity {
 
     }
 
+    public void onPause() {
+        if(narrator !=null){
+            narrator.stop();
+            narrator.shutdown();
+        }
+        super.onPause();
+    }
+
+
+
     class viewpageSwipeHandler extends GestureDetector.SimpleOnGestureListener{
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {

@@ -67,6 +67,16 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    public void onPause() {
+        if(narrator !=null){
+            narrator.stop();
+            narrator.shutdown();
+        }
+        super.onPause();
+    }
+
+
+
     //region swipes
     @Override
     public boolean onTouchEvent(MotionEvent event) { //we need this to either let our inner class or another construct to handle the event.
@@ -76,6 +86,15 @@ public class MainActivity extends AppCompatActivity {
             super.onTouchEvent(event);
         }
         return super.onTouchEvent(event);
+    }
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+
+        if(narrator != null){
+            narrator.shutdown();
+        }
     }
 
 
