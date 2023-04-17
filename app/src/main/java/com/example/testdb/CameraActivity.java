@@ -47,7 +47,7 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
     //
     // EARLIER ISSUE WAS WITH CAMERA PERMISSIONS. NOW FIXED
     // STILL GOTTA WORK ON PERMS, CURRENTLY REQUIRED TO ACCEPT PERMS THE FIRST TIME, HARD IF YOU ARE BLIND, CHECK PERMISSION OVERRIDES.
-    private TextToSpeech narrator3,narrator,narrator7;
+    private TextToSpeech  narrator3,narrator,narrator7;
     private String narration=("Kamerayı başlatmak için ekrana dokunun." +
             "Anasayfaya dönmek için anasayfa diyin." +
             "Kaydetmek için kaydetme işlemi diyin."+
@@ -166,21 +166,19 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
 
             float[] confidences = outputFeature0.getFloatArray();
             // find the index of the class with the biggest confidence.
-            int maxPos = 0;
-            float maxConfidence = 0;
+            int maxPos = 5;
+            float maxConfidence = confidences[0];
 
             String[] classes = {"5", "10", "20","50","100","200"};
 
             // old model
             // String[] classes = {"10", "100", "20","200","5","50"};
-
-            for (int i = 0; i < confidences.length; i++) {
-                System.out.println(classes[i]+"="+confidences[i]);
-                Log.d("asd",classes[i]+"="+confidences[i]);
-                Log.d("asd","Classification 2.fora girildi.");
-                if (confidences[i] > maxConfidence) {
+            for (int i = 0; i < 6; i++) {
+                Log.d("asd",classes[i]+"="+confidences[i]*10000000);
+                if (confidences[i] >= maxConfidence) {
                     maxConfidence = confidences[i];
                     maxPos = i;
+                    Log.d("asd", "classifyImage: "+i);
                 }
             }
             result.setText(classes[maxPos]);
@@ -287,14 +285,18 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
 
 
     private void detectText(){
+
+
         InputImage image = InputImage.fromBitmap(imageBitmap, 0);
         TextRecognizer recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
-        final String blockText = null;
+        final String[] finalBlockText = {null};
         Task<Text> rs = recognizer.process(image).addOnSuccessListener(new OnSuccessListener<Text>() {
             @Override
             public void onSuccess(Text text) {
                 String blockText = null;
                 StringBuilder rs = new StringBuilder();
+
+
                 for (Text.TextBlock block : text.getTextBlocks()) {
                     blockText = block.getText();
                     Point[] blockCornerPoint = block.getCornerPoints();
@@ -307,31 +309,36 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
                             String elementText = element.getText();
                             rs.append(elementText);
                         }
+                        String a = blockText.toString();
+
+                        narrator7=new TextToSpeech(CameraActivity.this, new TextToSpeech.OnInitListener() {
+
+                            @Override
+                            public void onInit(int i) {
+
+
+                                if(i!=TextToSpeech.ERROR) {
+                                    Locale locale = new Locale("tr", "TR");
+                                    narrator7.setLanguage(locale);
+                                    narrator7.speak("Okunulan değer"+a, TextToSpeech.QUEUE_FLUSH,null);
+                                }
+                            }
+                        });
 
                         result.setText(blockText);
+
                     }
                 }
-
                 String filename = "deneme";
                 SaveText saveText = new SaveText(blockText, filename);
                 SaveTextRepository saveTextRepository = new SaveTextRepository(getApplicationContext());
                 saveTextRepository.InsertTask(saveText);
             }
+
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 Toast.makeText(CameraActivity.this, "fail to text recogg: "+ e.getMessage(),Toast.LENGTH_SHORT);
-            }
-        });
-
-        narrator=new TextToSpeech(this, new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int i) {
-                if(i!=TextToSpeech.ERROR) {
-                    Locale locale = new Locale("tr", "TR");
-                    narrator.setLanguage(locale);
-                    narrator.speak("Okunulan değer"+ blockText, TextToSpeech.QUEUE_FLUSH,null);
-                }
             }
         });
 
