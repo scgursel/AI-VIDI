@@ -59,8 +59,10 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
     ImageView imageView;
 
     TextView result;
-    int imageH= 512;
-    int imageW= 512;
+    int imageH= 224;
+    int imageW= 224;
+    int belgeRequest = 2;
+    int paraRequest = 3;
     Bitmap imageBitmap;
 
 
@@ -163,7 +165,11 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
             // find the index of the class with the biggest confidence.
             int maxPos = 0;
             float maxConfidence = 0;
-            String[] classes = {"10", "100", "20","200","5","50"};
+
+            String[] classes = {"5", "10", "20","50","100","200"};
+
+            // old model
+            // String[] classes = {"10", "100", "20","200","5","50"};
 
             for (int i = 0; i < confidences.length; i++) {
                 System.out.println(classes[i]+"="+confidences[i]);
@@ -225,22 +231,23 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
                 case "ayarlar":
                     startActivity(new Intent(this,SettingsActivity.class));
                     break;
-                case "fotoğraf çek":
-                case "Fotoğraf çek":
+                case "para":
+                case "Para":
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                             Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                            startActivityForResult(cameraIntent, 3);
+                            startActivityForResult(cameraIntent, paraRequest);
                         } else {
                             requestPermissions(new String[]{Manifest.permission.CAMERA}, 100);
                         }
                     }
                     break;
+                case "belge":
                 case "Belge":
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                             Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                            startActivityForResult(cameraIntent, 2);
+                            startActivityForResult(cameraIntent, belgeRequest);
                         } else {
                             requestPermissions(new String[]{Manifest.permission.CAMERA}, 100);
                         }
@@ -255,24 +262,22 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
         }
 
         //region classification import
-        if(resultCode == RESULT_OK){
-            if(requestCode == 3){
-                Bundle bundle = data.getExtras();
-                imageBitmap = (Bitmap) bundle.get("data");
-                imageView.setImageBitmap(imageBitmap);
-                detectText();
-                //classifyImage();
-
-            }
-        }
-        if(resultCode == 2){
-            if(requestCode == 3){
+        if(resultCode == RESULT_OK && requestCode == paraRequest){
                 Bundle bundle = data.getExtras();
                 imageBitmap = (Bitmap) bundle.get("data");
                 imageView.setImageBitmap(imageBitmap);
                 classifyImage(imageBitmap);
 
-            }
+
+
+        }
+        if(resultCode == RESULT_OK && requestCode == belgeRequest){
+                Bundle bundle = data.getExtras();
+                imageBitmap = (Bitmap) bundle.get("data");
+                imageView.setImageBitmap(imageBitmap);
+            Log.d("TAG", "onActivityResult: detectText if");
+                detectText();
+
         }
 
         super.onActivityResult(requestCode, resultCode, data);
