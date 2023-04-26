@@ -29,6 +29,14 @@ android {
     }
     buildFeatures {
         mlModelBinding true
+        viewBinding true
+    }
+    sourceSets {
+        main {
+            jni {
+                srcDirs 'src/main/jni', 'src/main/jnilibs'
+            }
+        }
     }
 }
 
@@ -44,9 +52,12 @@ dependencies {
     implementation 'org.tensorflow:tensorflow-lite-support:0.4.3'
     implementation 'org.tensorflow:tensorflow-lite-metadata:0.1.0'
     implementation 'com.google.firebase:firebase-core:21.1.1'
+    implementation 'com.google.mlkit:text-recognition:16.0.0-beta6'
 
-    implementation 'com.google.android.gms:play-services-mlkit-text-recognition:16.2.0'
     implementation 'org.tensorflow:tensorflow-lite-gpu:2.3.0'
+    implementation 'androidx.navigation:navigation-fragment:2.5.3'
+    implementation 'androidx.navigation:navigation-ui:2.5.3'
+    implementation project(path: ':opencv4')
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.4'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'

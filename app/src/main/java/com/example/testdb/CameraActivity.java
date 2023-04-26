@@ -6,7 +6,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.media.ThumbnailUtils;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -31,7 +30,7 @@ import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.text.Text;
 import com.google.mlkit.vision.text.TextRecognition;
 import com.google.mlkit.vision.text.TextRecognizer;
-import com.google.mlkit.vision.text.TextRecognizerOptions;
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 
 import org.tensorflow.lite.DataType;
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
@@ -64,7 +63,13 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
     int belgeRequest = 2;
     int paraRequest = 3;
     Bitmap imageBitmap;
+    private static final String TAG="CameraActivity";
 
+
+
+    public CameraActivity(){
+        Log.i(TAG,"Instantiated new "+this.getClass());
+    }
 
     //
     //
@@ -81,6 +86,16 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_classificationimport);
+
+
+
+
+
+
+
+
+
+
 
         ///////////////////////////////////////////////
         narrator3=new TextToSpeech(this, new TextToSpeech.OnInitListener() {
@@ -105,11 +120,18 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
 
     }
 
+
+
+
+
+
+
     public void onPause() {
         if(narrator3 !=null){
             narrator3.stop();
             narrator3.shutdown();
         }
+
         super.onPause();
     }
 
@@ -152,9 +174,9 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
             for(int i = 0; i < imageH; i ++){
                 for(int j = 0; j < imageW; j++){
                     int val = intValues[pixel++]; // RGB
-                    byteBuffer.putFloat(((val >> 16) & 0xFF) * (1.f / 1));
-                    byteBuffer.putFloat(((val >> 8) & 0xFF) * (1.f / 1));
-                    byteBuffer.putFloat((val & 0xFF) * (1.f / 1));
+                    byteBuffer.putFloat((val & 0xFF) * (1.f / 255.f));
+                    byteBuffer.putFloat(((val >> 8) & 0xFF) * (1.f / 255.f));
+                    byteBuffer.putFloat(((val >> 16) & 0xFF) * (1.f / 255.f));
                 }
             }
 
@@ -166,7 +188,7 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
 
             float[] confidences = outputFeature0.getFloatArray();
             // find the index of the class with the biggest confidence.
-            int maxPos = 5;
+            int maxPos = 0 ;
             float maxConfidence = confidences[0];
 
             String[] classes = {"5", "10", "20","50","100","200"};
@@ -174,11 +196,11 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
             // old model
             // String[] classes = {"10", "100", "20","200","5","50"};
             for (int i = 0; i < 6; i++) {
-                Log.d("asd",classes[i]+"="+confidences[i]*10000000);
+                Log.d(TAG,classes[i]+"="+confidences[i]*10000000);
                 if (confidences[i] >= maxConfidence) {
                     maxConfidence = confidences[i];
                     maxPos = i;
-                    Log.d("asd", "classifyImage: "+i);
+                    Log.d(TAG, "classifyImage: "+i);
                 }
             }
             result.setText(classes[maxPos]);
@@ -189,6 +211,8 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
                     if(i!=TextToSpeech.ERROR) {
                         Locale locale = new Locale("tr", "TR");
                         narrator.setLanguage(locale);
+                        Log.d(TAG,""+finalMaxPos);
+
                         narrator.speak("Okunulan değer"+classes[finalMaxPos], TextToSpeech.QUEUE_FLUSH,null);
                     }
                 }
@@ -215,7 +239,7 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
                     startActivity(new Intent(this, MainActivity.class));
                     break;
                 case "kayıtlara bak":
-                    Log.d("asd","right before records page");
+                    Log.d(TAG,"right before records page");
                     startActivity(new Intent(this,ViewActivity.class));
                     break;
                 case "tekrar dinle":
@@ -238,8 +262,16 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
                         }
                     }
                     break;
+                case "Obje":
+                case "obje":
+                    startActivity(new Intent(this,DetectionActivity.class));
+
+                    break;
                 case "belge":
                 case "Belge":
+                    startActivity(new Intent(this, textRecog.class));
+
+                    /*
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                             Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -248,6 +280,7 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
                             requestPermissions(new String[]{Manifest.permission.CAMERA}, 100);
                         }
                     }
+                     */
                     break;
                 default:
                     narrator3.speak("Anlaşılmadı, tekrar söyleyin.", TextToSpeech.QUEUE_FLUSH, null);
@@ -271,7 +304,7 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
                 Bundle bundle = data.getExtras();
                 imageBitmap = (Bitmap) bundle.get("data");
                 imageView.setImageBitmap(imageBitmap);
-            Log.d("TAG", "onActivityResult: detectText if");
+            Log.d(TAG, "onActivityResult: detectText if");
                 detectText();
 
         }
@@ -288,7 +321,7 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
 
 
         InputImage image = InputImage.fromBitmap(imageBitmap, 0);
-        TextRecognizer recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
+        TextRecognizer recognizer = TextRecognition.getClient(new TextRecognizerOptions.Builder().build());
         final String[] finalBlockText = {null};
         Task<Text> rs = recognizer.process(image).addOnSuccessListener(new OnSuccessListener<Text>() {
             @Override
