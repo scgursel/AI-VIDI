@@ -50,7 +50,8 @@ public class DetectionActivity extends AppCompatActivity implements CameraBridge
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        Log.d(TAG, "onCreate: ");
+        supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
 
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -70,6 +71,7 @@ public class DetectionActivity extends AppCompatActivity implements CameraBridge
         cameraBridgeViewBase.setCameraPermissionGranted();
         cameraBridgeViewBase.setCvCameraViewListener(this);
         Log.d(TAG, "onCreate: before object detector");
+        /*
         try {
             objectDetectorClass = new objectDetectorClass(getAssets(),"ex.tflite","label.txt",300);
             Log.d(TAG, "onCreate: Model init succesfull");
@@ -78,7 +80,7 @@ public class DetectionActivity extends AppCompatActivity implements CameraBridge
             Log.d(TAG, "onCreate: getting err about model"+e.getMessage());
             e.printStackTrace();
         }
-
+            */
     }
 
 
@@ -141,9 +143,9 @@ public class DetectionActivity extends AppCompatActivity implements CameraBridge
 
         Imgproc.resize(fit,fit,mRgba.size());
         Mat out=new Mat();
-        out=objectDetectorClass.recognizeImage(mRgba);
+        //out=objectDetectorClass.recognizeImage(mRgba);
 
-        return out;
+        return mRgba;
 
     }
 
