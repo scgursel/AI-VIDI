@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -18,10 +19,22 @@ import android.widget.Toast;
 
 import com.example.testdb.Db.SaveTextRepository;
 
+import org.opencv.android.OpenCVLoader;
+
 import java.util.ArrayList;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG="MainActivity";
+
+    static {
+        if(OpenCVLoader.initDebug()){
+            Log.d(TAG, "static initializer: Opencv is loaded");
+        }
+        else{
+            Log.d(TAG, "static initializer: Opencv is not loaded");
+        }
+    }
 
     SharedPreferences settingPrefs;
     String checkBoxForSwipeStatus;

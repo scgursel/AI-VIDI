@@ -22,7 +22,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.testdb.ml.Model;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -157,73 +156,6 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
 
 
 
-
-    public void classifyImage(Bitmap image){
-        try {
-            Model model = Model.newInstance(getApplicationContext());
-
-            // Creates inputs for reference.
-            TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, imageW, imageH, 3}, DataType.FLOAT32);
-            ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4 * imageW * imageH * 3);
-            byteBuffer.order(ByteOrder.nativeOrder());
-
-            int[] intValues = new int[imageW * imageH];
-            image.getPixels(intValues, 0, image.getWidth(), 0, 0, image.getWidth(), image.getHeight());
-            int pixel = 0;
-            //iterate over each pixel and extract R, G, and B values. Add those values individually to the byte buffer.
-            for(int i = 0; i < imageH; i ++){
-                for(int j = 0; j < imageW; j++){
-                    int val = intValues[pixel++]; // RGB
-                    byteBuffer.putFloat((val & 0xFF) * (1.f / 255.f));
-                    byteBuffer.putFloat(((val >> 8) & 0xFF) * (1.f / 255.f));
-                    byteBuffer.putFloat(((val >> 16) & 0xFF) * (1.f / 255.f));
-                }
-            }
-
-            inputFeature0.loadBuffer(byteBuffer);
-
-            // Runs model inference and gets result.
-            Model.Outputs outputs = model.process(inputFeature0);
-            TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
-
-            float[] confidences = outputFeature0.getFloatArray();
-            // find the index of the class with the biggest confidence.
-            int maxPos = 0 ;
-            float maxConfidence = confidences[0];
-
-            String[] classes = {"5", "10", "20","50","100","200"};
-
-            // old model
-            // String[] classes = {"10", "100", "20","200","5","50"};
-            for (int i = 0; i < 6; i++) {
-                Log.d(TAG,classes[i]+"="+confidences[i]*10000000);
-                if (confidences[i] >= maxConfidence) {
-                    maxConfidence = confidences[i];
-                    maxPos = i;
-                    Log.d(TAG, "classifyImage: "+i);
-                }
-            }
-            result.setText(classes[maxPos]);
-            int finalMaxPos = maxPos;
-            narrator=new TextToSpeech(this, new TextToSpeech.OnInitListener() {
-                @Override
-                public void onInit(int i) {
-                    if(i!=TextToSpeech.ERROR) {
-                        Locale locale = new Locale("tr", "TR");
-                        narrator.setLanguage(locale);
-                        Log.d(TAG,""+finalMaxPos);
-
-                        narrator.speak("Okunulan değer"+classes[finalMaxPos], TextToSpeech.QUEUE_FLUSH,null);
-                    }
-                }
-            });
-            // Releases model resources if no longer used.
-            model.close();
-        } catch (IOException e) {
-            // TODO Handle the exception
-        }
-    }
-    
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         //NEED TO ADD REQUEST CODE CHECKS HERE OR MAYHEM!
@@ -253,18 +185,18 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
                     break;
                 case "para":
                 case "Para":
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-                            Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                            startActivityForResult(cameraIntent, paraRequest);
-                        } else {
-                            requestPermissions(new String[]{Manifest.permission.CAMERA}, 100);
-                        }
-                    }
+                    startActivity(new Intent(this,MoneyDetection.class));
+                case "Sebze":
+                case "sebze":
+                    startActivity(new Intent(this,FruitDetection.class));
+                case "kıyafet":
+                case "Kıyafet":
+                case "kiyafet":
+                    startActivity(new Intent(this,ClothesDetection.class));
                     break;
                 case "Obje":
                 case "obje":
-                    startActivity(new Intent(this,DetectionActivity.class));
+                    startActivity(new Intent(this,DetectionLast.class));
 
                     break;
                 case "belge":
@@ -289,96 +221,10 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
         }else{//request not handled.
             //narrator3.speak("", TextToSpeech.QUEUE_FLUSH, null);
         }
-
-        //region classification import
-        if(resultCode == RESULT_OK && requestCode == paraRequest){
-                Bundle bundle = data.getExtras();
-                imageBitmap = (Bitmap) bundle.get("data");
-                imageView.setImageBitmap(imageBitmap);
-                classifyImage(imageBitmap);
-
-
-
-        }
-        if(resultCode == RESULT_OK && requestCode == belgeRequest){
-                Bundle bundle = data.getExtras();
-                imageBitmap = (Bitmap) bundle.get("data");
-                imageView.setImageBitmap(imageBitmap);
-            Log.d(TAG, "onActivityResult: detectText if");
-                detectText();
-
-        }
-
         super.onActivityResult(requestCode, resultCode, data);
         //endregion
 
 
 
     }
-
-
-    private void detectText(){
-
-
-        InputImage image = InputImage.fromBitmap(imageBitmap, 0);
-        TextRecognizer recognizer = TextRecognition.getClient(new TextRecognizerOptions.Builder().build());
-        final String[] finalBlockText = {null};
-        Task<Text> rs = recognizer.process(image).addOnSuccessListener(new OnSuccessListener<Text>() {
-            @Override
-            public void onSuccess(Text text) {
-                String blockText = null;
-                StringBuilder rs = new StringBuilder();
-
-
-                for (Text.TextBlock block : text.getTextBlocks()) {
-                    blockText = block.getText();
-                    Point[] blockCornerPoint = block.getCornerPoints();
-                    Rect blockFramae = block.getBoundingBox();
-                    for (Text.Line line : block.getLines()) {
-                        String lineText = line.getText();
-                        Point[] lineCornerPoint = line.getCornerPoints();
-                        Rect linRect = line.getBoundingBox();
-                        for (Text.Element element : line.getElements()) {
-                            String elementText = element.getText();
-                            rs.append(elementText);
-                        }
-                        String a = blockText.toString();
-
-                        narrator7=new TextToSpeech(CameraActivity.this, new TextToSpeech.OnInitListener() {
-
-                            @Override
-                            public void onInit(int i) {
-
-
-                                if(i!=TextToSpeech.ERROR) {
-                                    Locale locale = new Locale("tr", "TR");
-                                    narrator7.setLanguage(locale);
-                                    narrator7.speak("Okunulan değer"+a, TextToSpeech.QUEUE_FLUSH,null);
-                                }
-                            }
-                        });
-
-                        result.setText(blockText);
-
-                    }
-                }
-                String filename = "deneme";
-                SaveText saveText = new SaveText(blockText, filename);
-                SaveTextRepository saveTextRepository = new SaveTextRepository(getApplicationContext());
-                saveTextRepository.InsertTask(saveText);
-            }
-
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(CameraActivity.this, "fail to text recogg: "+ e.getMessage(),Toast.LENGTH_SHORT);
-            }
-        });
-
-    }
-// public void capturePhoto(){
-// Intent intent=new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
-// startActivityForResult(intent,2);
-// }
 }

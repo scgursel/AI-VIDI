@@ -43,9 +43,7 @@ public class textRecog extends AppCompatActivity implements CameraBridgeViewBase
     private static final String TAG="TextActivity";
 
     private Mat mRgba;
-    private Mat mGray;
     private CameraBridgeViewBase cameraBridgeViewBase;
-    private objectDetectorClass objectDetectorClass;
     private TextRecognizer textRecognizer;
     private ImageView captureButton;
     private TextView textView;
@@ -179,14 +177,12 @@ public class textRecog extends AppCompatActivity implements CameraBridgeViewBase
 
     public void onCameraViewStarted(int width ,int height){
         mRgba=new Mat(height,width, CvType.CV_8UC4);
-        mGray =new Mat(height,width,CvType.CV_8UC1);
     }
     public void onCameraViewStopped(){
         mRgba.release();
     }
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame){
         mRgba=inputFrame.rgba();
-        mGray=inputFrame.gray();
         Size newSize = new Size(400, 200);
         Mat fit = new Mat(newSize, CvType.CV_8UC4);
         Imgproc.resize(mRgba,fit,newSize);
