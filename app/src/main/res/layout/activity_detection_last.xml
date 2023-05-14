@@ -7,9 +7,9 @@
     tools:context=".textRecog">
 
     <org.opencv.android.JavaCameraView
+        android:id="@+id/frame_surface"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/frame_surface"/>
+        android:layout_height="567dp" />
 
 
     <LinearLayout
@@ -37,31 +37,32 @@
     </LinearLayout>
 
     <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
         android:id="@+id/crntImg"
-        android:contentDescription="@string/app_name" />
-    <TextView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="568dp"
+        android:contentDescription="@string/app_name" />
+
+    <TextView
         android:id="@+id/text_view"
-        android:background="@color/white"/>
+        android:layout_width="match_parent"
+        android:layout_height="568dp"
+        android:background="@color/white" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:background="@color/black"
+        android:layout_height="163dp"
         android:layout_gravity="bottom"
+        android:background="@color/black"
         android:gravity="center_horizontal"
         android:orientation="horizontal">
+
         <ImageView
-            android:layout_gravity="center"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
             android:id="@+id/cptr"
-            android:src="@drawable/baseline_add_a_photo_24"
+            android:layout_width="match_parent"
+            android:layout_height="139dp"
+            android:layout_gravity="center"
             android:contentDescription="@string/app_name"
-            />
+            android:src="@drawable/baseline_add_a_photo_24" />
 
     </LinearLayout>
 

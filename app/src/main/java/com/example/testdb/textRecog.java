@@ -2,9 +2,12 @@ package com.example.testdb;
 
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
@@ -39,10 +42,14 @@ import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
+import java.util.Locale;
+
 public class textRecog extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2{
     private static final String TAG="TextActivity";
-
+    String b;
+    private TextToSpeech  narrator;
     private Mat mRgba;
+    private Mat mGray;
     private CameraBridgeViewBase cameraBridgeViewBase;
     private TextRecognizer textRecognizer;
     private ImageView captureButton;
@@ -94,8 +101,10 @@ public class textRecog extends AppCompatActivity implements CameraBridgeViewBase
         textView.setVisibility(View.GONE);
 
         captureButton.setOnTouchListener(new View.OnTouchListener() {
+            @SuppressLint("ClickableViewAccessibility")
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
+
                 if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
                     return true;
                 }
@@ -110,30 +119,46 @@ public class textRecog extends AppCompatActivity implements CameraBridgeViewBase
                         Utils.matToBitmap(mRgba,bitmap);
                         cameraBridgeViewBase.disableView();
                         camOrRecog="recog";
-                        InputImage inputImage = InputImage.fromBitmap(bitmap,0);
+                        InputImage inputImage = InputImage.fromBitmap(bitmap,180);
                         Task<Text> result = textRecognizer.process(inputImage)
                                 .addOnSuccessListener(new OnSuccessListener<Text>() {
                                     @Override
                                     public void onSuccess(Text text) {
                                         textView.setText(text.getText());
-                                        Log.d(TAG, "onSuccess: "+ text);
+                                        String filename = "Belge";
+                                        SaveText saveText = new SaveText((String) textView.getText(), filename);
+                                        SaveTextRepository saveTextRepository = new SaveTextRepository(getApplicationContext());
+                                        saveTextRepository.InsertTask(saveText);
+                                        Log.d(TAG, "onSuccess: "+ text);;
+                                        narrator=new TextToSpeech(textRecog.this, new TextToSpeech.OnInitListener() {
+                                            @Override
+                                            public void onInit(int i) {
+                                                if(i!=TextToSpeech.ERROR) {
+                                                    Locale locale = new Locale("tr", "TR");
+                                                    narrator.setLanguage(locale);
+                                                    narrator.speak("Okutulan Belge"+textView.getText(), TextToSpeech.QUEUE_FLUSH,null);
+
+                                                }
+                                            }
+                                        });
+                                        setContentView(R.layout.activity_classificationimport);
                                     }
                                 })
                                 .addOnFailureListener(new OnFailureListener() {
                                     @Override
                                     public void onFailure(@NonNull Exception e) {
-
                                     }
                                 });
                     }
                     return true;
                 }
+
                 return false;
+
             }
+
         });
     }
-
-
 
     @Override
     protected void onResume() {
@@ -177,12 +202,14 @@ public class textRecog extends AppCompatActivity implements CameraBridgeViewBase
 
     public void onCameraViewStarted(int width ,int height){
         mRgba=new Mat(height,width, CvType.CV_8UC4);
+        mGray =new Mat(height,width,CvType.CV_8UC1);
     }
     public void onCameraViewStopped(){
         mRgba.release();
     }
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame){
         mRgba=inputFrame.rgba();
+        mGray=inputFrame.gray();
         Size newSize = new Size(400, 200);
         Mat fit = new Mat(newSize, CvType.CV_8UC4);
         Imgproc.resize(mRgba,fit,newSize);

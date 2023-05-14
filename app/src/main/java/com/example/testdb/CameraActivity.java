@@ -177,9 +177,6 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
                 case "tekrar dinle":
                     narrator3.speak(narration, TextToSpeech.QUEUE_FLUSH, null);
                     break;
-                case "kaydetme işlemi":
-                    saveRecord();
-                    break;
                 case "ayarlar":
                     startActivity(new Intent(this,SettingsActivity.class));
                     break;

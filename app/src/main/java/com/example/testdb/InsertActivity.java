@@ -17,9 +17,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GestureDetectorCompat;
 
-import com.example.testdb.Db.SaveText;
-import com.example.testdb.Db.SaveTextRepository;
-
 import java.util.ArrayList;
 import java.util.Locale;
 

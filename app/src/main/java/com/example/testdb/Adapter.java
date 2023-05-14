@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Handler;
 import android.speech.tts.TextToSpeech;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,7 +21,7 @@ import java.util.Locale;
 import java.util.Random;
 
 public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
-
+    int i=0;
     ArrayList<SaveText> saveTextArrayList;
     Context context;
     private TextToSpeech narrator;
@@ -29,6 +30,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
         this.saveTextArrayList = saveTextArrayList;
         this.context = context;
     }
+
 
     @NonNull
     @Override
@@ -45,13 +47,6 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
         holder.text.setText(saveTextArrayList.get(position).getText()+"");
         holder.file_name.setText(saveTextArrayList.get(position).getFile_name()+"");
 
-        Random random=new Random();
-        int red=random.nextInt(128)+127;
-        int blue=random.nextInt(128)+127;
-        int green=random.nextInt(128)+127;
-
-        // holder.image.setBackgroundColor(Color.rgb(red,green,blue));
-
         holder.img_update.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -60,20 +55,41 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
             }
         });
 
+        holder.text.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                update_dialog(position);
+                return false;
+            }
+        });
+
+        holder.text.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                i++;
+                Handler handler= new Handler();
+                Runnable run=new Runnable() {
+                    @Override
+                    public void run() {
+                        i=0;
+                    }
+                };
+                if(i==2){
+                    tts_text(position);
+                }
+
+                if(i==1){
+                    handler.postDelayed(run,500);
+                    tts_baslik(position);
+                }
+            }
+        });
         holder.img_delete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 delete_dialog(position);
             }
         });
-
-        holder.img_tts.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                tts_dialog(position);
-            }
-        });
-
 
     }
 
@@ -85,7 +101,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
     public static class MyViewHolder extends RecyclerView.ViewHolder {
         TextView text;
         TextView file_name;
-        ImageView file_image;
+
         ImageView img_update;
         ImageView img_delete;
         ImageView img_tts;
@@ -94,7 +110,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
 
             super(itemview);
             this.file_name = (TextView) itemview.findViewById(R.id.file_name);
-         //   file_image.setBackgroundResource(R.drawable.vidi);
+            //   file_image.setBackgroundResource(R.drawable.vidi);
             this.text = (TextView) itemview.findViewById(R.id.text);
             this.img_delete = (ImageView) itemview.findViewById(R.id.img_delete);
             this.img_update = (ImageView) itemview.findViewById(R.id.img_update);
@@ -104,8 +120,10 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
 
     }
 
+
     //===========UPDATE===============
     public void update_dialog(int position_of_update){
+
 
         AlertDialog.Builder builder=new AlertDialog.Builder(context);
         builder.setTitle("Update");
@@ -148,7 +166,6 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
     }
 
 
-
     //===========UPDATE FİNAL===============
 
     //===========DELETE START===============
@@ -183,23 +200,37 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
     //==============DELETE FİNAL==================
 
     //==============TTS START=====================
-        public void tts_dialog(int position_of_tts){
+    public void tts_text(int position_of_tts){
         String tts=saveTextArrayList.get(position_of_tts).getText()+"";
+        String fName=saveTextArrayList.get(position_of_tts).getFile_name()+"";
 
-            narrator=new TextToSpeech(context, new TextToSpeech.OnInitListener() {
-                @Override
-                public void onInit(int i) {
-                    if(i!=TextToSpeech.ERROR) {
-                        //Locale.TURKISH isnt incorporated for some fucking reason.
-                        //So need to define it then pass it to the narrator as a parameter.
-                        Locale locale = new Locale("tr", "TR");
-                        narrator.setLanguage(locale);
-                        narrator.speak(tts, TextToSpeech.QUEUE_FLUSH,null);
-                    }
+        narrator=new TextToSpeech(context, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int i) {
+                if(i!=TextToSpeech.ERROR) {
+                    Locale locale = new Locale("tr", "TR");
+                    narrator.setLanguage(locale);
+                    narrator.speak(" Belge İçeriği"+tts, TextToSpeech.QUEUE_FLUSH,null);
                 }
-            });
+            }
+        });
+    }
 
-        }
+    public void tts_baslik(int position_of_tts){
+        String tts=saveTextArrayList.get(position_of_tts).getText()+"";
+        String fName=saveTextArrayList.get(position_of_tts).getFile_name()+"";
+
+        narrator=new TextToSpeech(context, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int i) {
+                if(i!=TextToSpeech.ERROR) {
+                    Locale locale = new Locale("tr", "TR");
+                    narrator.setLanguage(locale);
+                    narrator.speak("Belge Başlığı"+fName, TextToSpeech.QUEUE_FLUSH,null);
+                }
+            }
+        });
+    }
 
 
     //===========TTS FİNAL============
