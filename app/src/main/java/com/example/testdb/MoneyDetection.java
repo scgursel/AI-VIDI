@@ -2,6 +2,7 @@ package com.example.testdb;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -9,6 +10,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.os.Bundle;
+import android.os.Handler;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -134,7 +136,13 @@ public class MoneyDetection extends Activity implements CameraBridgeViewBase.CvC
 
         result = findViewById(R.id.resultDetection);
 
-
+captureButton.setOnLongClickListener(new View.OnLongClickListener() {
+    @Override
+    public boolean onLongClick(View view) {
+        setContentView(R.layout.activity_classificationimport);
+        return false;
+    }
+});
         captureButton.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -153,12 +161,13 @@ public class MoneyDetection extends Activity implements CameraBridgeViewBase.CvC
                         camOrRecog="recog";
                         InputImage inputImage = InputImage.fromBitmap(bitmap,0);
                         getPredictions(bitmap);
-
+                        setContentView(R.layout.activity_classificationimport);
                     }
                     return true;
                 }
                 return false;
             }
+
         });
     }
     private void getPredictions(Bitmap bitmap) {
@@ -227,10 +236,11 @@ public class MoneyDetection extends Activity implements CameraBridgeViewBase.CvC
                 );
             }
         }
-        currentImage.setRotation(270);
+
+        currentImage.setRotation(0);
         currentImage.setImageBitmap(mutable);
 
-
+        setContentView(R.layout.activity_classificationimport);
     }
 
 
@@ -266,7 +276,7 @@ public class MoneyDetection extends Activity implements CameraBridgeViewBase.CvC
     }
 
     public void onCameraViewStarted(int width ,int height){
-        mRgba=new Mat(height,width, CvType.CV_8UC4);
+        mRgba=new Mat(width,height, CvType.CV_8UC4);
     }
     public void onCameraViewStopped(){
         mRgba.release();

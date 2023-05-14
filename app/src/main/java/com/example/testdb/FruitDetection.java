@@ -23,7 +23,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.example.testdb.ml.Android2;
+import com.example.testdb.ml.Android;
 
 
 import com.google.mlkit.vision.common.InputImage;
@@ -69,7 +69,7 @@ public class FruitDetection extends Activity implements CameraBridgeViewBase.CvC
             Color.BLACK, Color.DKGRAY, Color.MAGENTA, Color.YELLOW, Color.RED
     );
     List<String> labels;
-    @NonNull Android2 model;
+    @NonNull Android model;
     ImageProcessor imageProcessor = new ImageProcessor.Builder()
             .add(new ResizeOp(320, 320, ResizeOp.ResizeMethod.BILINEAR))
             .build();
@@ -105,7 +105,7 @@ public class FruitDetection extends Activity implements CameraBridgeViewBase.CvC
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         try {
-            model = Android2.newInstance(this);
+            model = Android.newInstance(this);
         } catch (IOException e) {
             Log.d(TAG, "onCreate: model init failed");
             throw new RuntimeException(e);
@@ -170,14 +170,14 @@ public class FruitDetection extends Activity implements CameraBridgeViewBase.CvC
 
 
 
-        Android2.Outputs outputs = model.process(image);
+        Android.Outputs outputs = model.process(image);
         float[] locations = outputs.getCategoryAsTensorBuffer().getFloatArray();
         float[] classes = outputs.getCategoryAsTensorBuffer().getFloatArray();
         float[] scores = outputs.getScoreAsTensorBuffer().getFloatArray();
         float[] numberOfDetections = outputs.getNumberOfDetectionsAsTensorBuffer().getFloatArray();
-        @NonNull List<Android2.DetectionResult> detectionResultList = outputs.getDetectionResultList();
+        @NonNull List<Android.DetectionResult> detectionResultList = outputs.getDetectionResultList();
 
-        Android2.DetectionResult detectionResult = outputs.getDetectionResultList().get(0);
+        Android.DetectionResult detectionResult = outputs.getDetectionResultList().get(0);
         float score = detectionResult.getScoreAsFloat();
         RectF location = detectionResult.getLocationAsRectF();
         String category = detectionResult.getCategoryAsString();

@@ -24,7 +24,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.example.testdb.ml.Android2;
+import com.example.testdb.ml.Kiyafet;
 
 
 import com.google.mlkit.vision.common.InputImage;
@@ -75,7 +75,7 @@ public class ClothesDetection extends Activity implements CameraBridgeViewBase.C
             Color.BLACK, Color.DKGRAY, Color.MAGENTA, Color.YELLOW, Color.RED
     );
     List<String> labels;
-    @NonNull Android2 model;
+    @NonNull Kiyafet model;
     ImageProcessor imageProcessor = new ImageProcessor.Builder()
             .add(new ResizeOp(320, 320, ResizeOp.ResizeMethod.BILINEAR))
             .build();
@@ -111,7 +111,7 @@ public class ClothesDetection extends Activity implements CameraBridgeViewBase.C
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         try {
-            model = Android2.newInstance(this);
+            model = Kiyafet.newInstance(this);
         } catch (IOException e) {
             Log.d(TAG, "onCreate: model init failed");
             throw new RuntimeException(e);
@@ -174,14 +174,14 @@ public class ClothesDetection extends Activity implements CameraBridgeViewBase.C
 
 
 
-        Android2.Outputs outputs = model.process(image);
+        Kiyafet.Outputs outputs = model.process(image);
         float[] locations = outputs.getCategoryAsTensorBuffer().getFloatArray();
         float[] classes = outputs.getCategoryAsTensorBuffer().getFloatArray();
         float[] scores = outputs.getScoreAsTensorBuffer().getFloatArray();
         float[] numberOfDetections = outputs.getNumberOfDetectionsAsTensorBuffer().getFloatArray();
-        @NonNull List<Android2.DetectionResult> detectionResultList = outputs.getDetectionResultList();
+        @NonNull List<Kiyafet.DetectionResult> detectionResultList = outputs.getDetectionResultList();
 
-        Android2.DetectionResult detectionResult = outputs.getDetectionResultList().get(0);
+        Kiyafet.DetectionResult detectionResult = outputs.getDetectionResultList().get(0);
         float score = detectionResult.getScoreAsFloat();
         RectF location = detectionResult.getLocationAsRectF();
         String category = detectionResult.getCategoryAsString();

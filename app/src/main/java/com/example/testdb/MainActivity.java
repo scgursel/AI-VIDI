@@ -17,8 +17,6 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.testdb.Db.SaveTextRepository;
-
 import org.opencv.android.OpenCVLoader;
 
 import java.util.ArrayList;

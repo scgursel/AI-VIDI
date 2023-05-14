@@ -2,7 +2,7 @@
   {
     "level_": 0,
     "message_": "Start JSON generation. Platform version: 21 min SDK version: arm64-v8a",
-    "file_": "/Users/servetcangursel/AI-VIDI/opencv/libcxx_helper/CMakeLists.txt",
+    "file_": "C:\\Users\\eraya\\Desktop\\AI-VIDI\\opencv\\libcxx_helper\\CMakeLists.txt",
     "tag_": "debug|arm64-v8a",
     "diagnosticCode_": 0,
     "memoizedIsInitialized": 1,
@@ -11,12 +11,12 @@
       "fieldsDescending": {}
     },
     "memoizedSize": -1,
-    "memoizedHashCode": 119200883
+    "memoizedHashCode": 745649185
   },
   {
     "level_": 0,
-    "message_": "JSON \u0027/Users/servetcangursel/AI-VIDI/opencv/.cxx/Debug/7fo8673w/arm64-v8a/android_gradle_build.json\u0027 was up-to-date",
-    "file_": "/Users/servetcangursel/AI-VIDI/opencv/libcxx_helper/CMakeLists.txt",
+    "message_": "JSON \u0027C:\\Users\\eraya\\Desktop\\AI-VIDI\\opencv\\.cxx\\Debug\\7fo8673w\\arm64-v8a\\android_gradle_build.json\u0027 was up-to-date",
+    "file_": "C:\\Users\\eraya\\Desktop\\AI-VIDI\\opencv\\libcxx_helper\\CMakeLists.txt",
     "tag_": "debug|arm64-v8a",
     "diagnosticCode_": 0,
     "memoizedIsInitialized": 1,
@@ -25,12 +25,12 @@
       "fieldsDescending": {}
     },
     "memoizedSize": -1,
-    "memoizedHashCode": -707102911
+    "memoizedHashCode": 753284872
   },
   {
     "level_": 0,
     "message_": "JSON generation completed without problems",
-    "file_": "/Users/servetcangursel/AI-VIDI/opencv/libcxx_helper/CMakeLists.txt",
+    "file_": "C:\\Users\\eraya\\Desktop\\AI-VIDI\\opencv\\libcxx_helper\\CMakeLists.txt",
     "tag_": "debug|arm64-v8a",
     "diagnosticCode_": 0,
     "memoizedIsInitialized": 1,
@@ -39,6 +39,6 @@
       "fieldsDescending": {}
     },
     "memoizedSize": -1,
-    "memoizedHashCode": 1221906962
+    "memoizedHashCode": 1848355264
   }
 ]
