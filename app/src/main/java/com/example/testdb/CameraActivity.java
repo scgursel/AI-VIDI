@@ -184,39 +184,23 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
                     startActivity(new Intent(this,SettingsActivity.class));
                     break;
                 case "para":
-                case "Para":
                     startActivity(new Intent(this,MoneyDetection.class));
-                case "Sebze":
+                    break;
                 case "sebze":
                     startActivity(new Intent(this,FruitDetection.class));
-                case "kıyafet":
-                case "Kıyafet":
-                case "kiyafet":
+                    break;
+               case "kıyafet":
                     startActivity(new Intent(this,ClothesDetection.class));
                     break;
-                case "Obje":
-                case "obje":
-                    startActivity(new Intent(this,DetectionLast.class));
 
-                    break;
                 case "belge":
-                case "Belge":
                     startActivity(new Intent(this, textRecog.class));
-
-                    /*
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-                            Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                            startActivityForResult(cameraIntent, belgeRequest);
-                        } else {
-                            requestPermissions(new String[]{Manifest.permission.CAMERA}, 100);
-                        }
-                    }
-                     */
                     break;
                 default:
                     narrator3.speak("Anlaşılmadı, tekrar söyleyin.", TextToSpeech.QUEUE_FLUSH, null);
                     break;
+
+
             }
         }else{//request not handled.
             //narrator3.speak("", TextToSpeech.QUEUE_FLUSH, null);

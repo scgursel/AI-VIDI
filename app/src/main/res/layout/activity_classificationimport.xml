@@ -29,7 +29,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:text="Okunulan Değer:"
         android:textStyle="bold"
         android:textSize="20sp"
         android:id="@+id/classified"

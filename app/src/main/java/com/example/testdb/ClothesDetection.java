@@ -24,7 +24,8 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.example.testdb.ml.Android2;
+import com.example.testdb.ml.AndroidFruit;
+import com.example.testdb.ml.Kiyafet;
 
 
 import com.google.mlkit.vision.common.InputImage;
@@ -51,7 +52,7 @@ import java.util.List;
 import java.util.Locale;
 
 public class ClothesDetection extends Activity implements CameraBridgeViewBase.CvCameraViewListener2{
-    private static final String TAG="ParaActivity";
+    private static final String TAG="ClothesActivity";
     private TextToSpeech  narrator3;
 
     private Mat mRgba;
@@ -75,7 +76,6 @@ public class ClothesDetection extends Activity implements CameraBridgeViewBase.C
             Color.BLACK, Color.DKGRAY, Color.MAGENTA, Color.YELLOW, Color.RED
     );
     List<String> labels;
-    @NonNull Android2 model;
     ImageProcessor imageProcessor = new ImageProcessor.Builder()
             .add(new ResizeOp(320, 320, ResizeOp.ResizeMethod.BILINEAR))
             .build();
@@ -110,12 +110,7 @@ public class ClothesDetection extends Activity implements CameraBridgeViewBase.C
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        try {
-            model = Android2.newInstance(this);
-        } catch (IOException e) {
-            Log.d(TAG, "onCreate: model init failed");
-            throw new RuntimeException(e);
-        }
+
         try {
             labels = FileUtil.loadLabels(this, "label.txt");
         } catch (IOException e) {
@@ -141,7 +136,7 @@ public class ClothesDetection extends Activity implements CameraBridgeViewBase.C
         textView.setVisibility(View.GONE);
 
         result = findViewById(R.id.resultDetection);
-
+        result.setVisibility(View.GONE);
         captureButton.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -169,73 +164,85 @@ public class ClothesDetection extends Activity implements CameraBridgeViewBase.C
         });
     }
     private void getPredictions(Bitmap bitmap) {
-        TensorImage image = TensorImage.fromBitmap(bitmap);
-        image = imageProcessor.process(image);
 
+        try {
+            Kiyafet model = Kiyafet.newInstance(ClothesDetection.this);
 
+            // Creates inputs for reference.
+            TensorImage image = TensorImage.fromBitmap(bitmap);
 
-        Android2.Outputs outputs = model.process(image);
-        float[] locations = outputs.getCategoryAsTensorBuffer().getFloatArray();
-        float[] classes = outputs.getCategoryAsTensorBuffer().getFloatArray();
-        float[] scores = outputs.getScoreAsTensorBuffer().getFloatArray();
-        float[] numberOfDetections = outputs.getNumberOfDetectionsAsTensorBuffer().getFloatArray();
-        @NonNull List<Android2.DetectionResult> detectionResultList = outputs.getDetectionResultList();
+            // Runs model inference and gets result.
+            Kiyafet.Outputs outputs = model.process(image);
+            Kiyafet.DetectionResult detectionResult = outputs.getDetectionResultList().get(0);
 
-        Android2.DetectionResult detectionResult = outputs.getDetectionResultList().get(0);
-        float score = detectionResult.getScoreAsFloat();
-        RectF location = detectionResult.getLocationAsRectF();
-        String category = detectionResult.getCategoryAsString();
+            // Gets result from DetectionResult.
+            List<Kiyafet.DetectionResult> detectionResultList = outputs.getDetectionResultList();
 
-        Log.d(TAG, "getPredictions: "+category+score);
+            float[] locations = outputs.getCategoryAsTensorBuffer().getFloatArray();
+            float[] scores = outputs.getScoreAsTensorBuffer().getFloatArray();
+            RectF location = detectionResult.getLocationAsRectF();
+            String category = detectionResult.getCategoryAsString();
+            float score = detectionResult.getScoreAsFloat();
 
-        for (int i=0; i<detectionResultList.size(); i++){
-            Log.d(TAG, "getPredictions: "+ detectionResultList.get(i).getCategoryAsString()+"="+detectionResultList.get(i).getScoreAsFloat());
-        }
-        Bitmap mutable = bitmap.copy(Bitmap.Config.ARGB_8888, true);
-        Canvas canvas = new Canvas(mutable);
-        int h = mutable.getHeight();
-        int w = mutable.getWidth();
-
-
-        Paint paint = new Paint();
-        paint.setTextSize(h/15f);
-        paint.setStrokeWidth(h/85f);
-        for (int index = 0; index < scores.length; index++) {
-            float fl = scores[index];
-            if (fl > 0.2) {
-                narrator3=new TextToSpeech(this, new TextToSpeech.OnInitListener() {
-                    @Override
-                    public void onInit(int i) {
-                        if(i!=TextToSpeech.ERROR) {
-                            Locale locale = new Locale("tr", "TR");
-                            narrator3.setLanguage(locale);
-                            narrator3.speak(category, TextToSpeech.QUEUE_FLUSH,null);
-                        }
-                    }
-                });
-
-
-                result.setText(labels.get((int) classes[index]));
-                int x = index * 4;
-                paint.setColor(colors.get(index));
-                paint.setStyle(Paint.Style.STROKE);
-                canvas.drawRect(new RectF(
-                        locations[x+1] * w,
-                        locations[x] * h,
-                        locations[x+3] * w,
-                        locations[x+2] * h
-                ), paint);
-                paint.setStyle(Paint.Style.FILL);
-                canvas.drawText(
-                        labels.get((int) classes[index]) + " " + Float.toString(fl),
-                        locations[x+1] * w,
-                        locations[x] * h,
-                        paint
-                );
+            for (int i = 0; i<detectionResultList.size(); i++){
+                Log.d(TAG, "getPredictions: "+ detectionResultList.get(i).getCategoryAsString()+"="+detectionResultList.get(i).getScoreAsFloat());
             }
+
+            // Releases model resources if no longer used.
+            Log.d(TAG, "getPredictions: "+category+score);
+
+
+
+            Bitmap mutable = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+
+            Canvas canvas = new Canvas(mutable);
+            int h = mutable.getHeight();
+            int w = mutable.getWidth();
+
+
+            Paint paint = new Paint();
+            paint.setTextSize(h/15f);
+            paint.setStrokeWidth(h/85f);
+            for (int index = 0; index < scores.length; index++) {
+                float fl = scores[index];
+                if (fl > 0.4) {
+                    narrator3=new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+                        @Override
+                        public void onInit(int i) {
+                            if(i!=TextToSpeech.ERROR) {
+                                Locale locale = new Locale("tr", "TR");
+                                narrator3.setLanguage(locale);
+                                narrator3.speak(category, TextToSpeech.QUEUE_FLUSH,null);
+                            }
+                        }
+                    });
+                    /////////////////////////////////////////////
+
+                    result.setText(category);
+                    int x = index * 4;
+                    paint.setColor(colors.get(index));
+                    paint.setStyle(Paint.Style.STROKE);
+                    canvas.drawRect(location, paint);
+                    paint.setStyle(Paint.Style.FILL);
+                    canvas.drawText(
+                            category + " " + Float.toString(fl),
+                            locations[x+1] * w,
+                            locations[x] * h,
+                            paint
+                    );
+                }
+            }
+
+            currentImage.setImageBitmap(mutable);
+            result.setVisibility(View.VISIBLE);
+
+            model.close();
+        } catch (IOException e) {
+            // TODO Handle the exception
         }
-        currentImage.setRotation(270);
-        currentImage.setImageBitmap(mutable);
+
+
+
 
 
     }

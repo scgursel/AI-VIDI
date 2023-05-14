@@ -37,9 +37,6 @@
         <activity
             android:name=".MoneyDetection"
             android:exported="false" />
-        <activity
-            android:name=".DetectionLast"
-            android:exported="false" />
 
         <activity
             android:name=".textRecog"
