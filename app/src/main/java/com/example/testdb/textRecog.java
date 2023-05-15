@@ -95,7 +95,8 @@ public class textRecog extends AppCompatActivity implements CameraBridgeViewBase
         cameraBridgeViewBase.setCameraPermissionGranted();
         cameraBridgeViewBase.setCvCameraViewListener(this);
 
-        textRecognizer= TextRecognition.getClient(new TextRecognizerOptions.Builder().build());
+        TextRecognizer textRecognizer =
+                TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
         textView = findViewById(R.id.textView);
         captureButton = findViewById(R.id.capture);
         textView.setVisibility(View.GONE);
@@ -129,12 +130,13 @@ public class textRecog extends AppCompatActivity implements CameraBridgeViewBase
                         Utils.matToBitmap(mRgba,bitmap);
                         cameraBridgeViewBase.disableView();
                         camOrRecog="recog";
-                        InputImage inputImage = InputImage.fromBitmap(bitmap,180);
+                        InputImage inputImage = InputImage.fromBitmap(bitmap,0);
                         Task<Text> result = textRecognizer.process(inputImage)
                                 .addOnSuccessListener(new OnSuccessListener<Text>() {
                                     @Override
                                     public void onSuccess(Text text) {
                                         textView.setText(text.getText().toLowerCase());
+                                        Log.d(TAG, "onSuccess: "+ text.getText());
                                         String filename = "Belge";
                                         SaveText saveText = new SaveText((String) textView.getText(), filename);
                                         SaveTextRepository saveTextRepository = new SaveTextRepository(getApplicationContext());
@@ -146,7 +148,7 @@ public class textRecog extends AppCompatActivity implements CameraBridgeViewBase
                                                 if(i!=TextToSpeech.ERROR) {
                                                     Locale locale = new Locale("tr", "TR");
                                                     narrator.setLanguage(locale);
-                                                    narrator.speak("Okutulan Belge"+textView.getText(), TextToSpeech.QUEUE_FLUSH,null);
+                                                    narrator.speak("Okutulan Belge"+text.getText().toLowerCase(), TextToSpeech.QUEUE_FLUSH,null);
 
                                                 }
                                             }

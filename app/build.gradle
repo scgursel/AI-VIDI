@@ -62,7 +62,8 @@ dependencies {
     implementation 'org.tensorflow:tensorflow-lite-support:0.4.3'
     implementation 'org.tensorflow:tensorflow-lite-metadata:0.1.0'
     implementation 'com.google.firebase:firebase-core:21.1.1'
-    implementation 'com.google.mlkit:text-recognition:16.0.0-beta6'
+    implementation 'com.google.android.gms:play-services-mlkit-text-recognition:19.0.0'
+
     implementation 'org.tensorflow:tensorflow-lite:0.0.0-nightly'
 
     implementation 'org.tensorflow:tensorflow-lite-gpu:2.3.0'
