@@ -135,8 +135,6 @@ public class ClothesDetection extends Activity implements CameraBridgeViewBase.C
         currentImage = findViewById(R.id.crntImg);
         textView.setVisibility(View.GONE);
 
-        result = findViewById(R.id.resultDetection);
-        result.setVisibility(View.GONE);
         isSecondpress=false;
 
         Intent intent=new Intent(this,CameraActivity.class);
@@ -224,12 +222,11 @@ public class ClothesDetection extends Activity implements CameraBridgeViewBase.C
                         if(i!=TextToSpeech.ERROR) {
                             Locale locale = new Locale("tr", "TR");
                             narrator3.setLanguage(locale);
-                            narrator3.speak(category, TextToSpeech.QUEUE_FLUSH,null);
+                            narrator3.speak(clothesMap.get(category), TextToSpeech.QUEUE_FLUSH,null);
                         }
                     }
                 });
-                result.setText(category);
-                // paint.setColor(colors.get(index));
+                paint.setColor(colors.get((int)Math.floor(Math.random()*10)));
                 paint.setStyle(Paint.Style.STROKE);
                 canvas.drawRect(location, paint);
                 paint.setStyle(Paint.Style.FILL);
@@ -255,7 +252,6 @@ public class ClothesDetection extends Activity implements CameraBridgeViewBase.C
 
             isSecondpress=true;
             currentImage.setImageBitmap(mutable);
-            result.setVisibility(View.VISIBLE);
 
             model.close();
         } catch (IOException e) {

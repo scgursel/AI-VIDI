@@ -133,8 +133,6 @@ public class FruitDetection extends Activity implements CameraBridgeViewBase.CvC
         currentImage = findViewById(R.id.crntImg);
         textView.setVisibility(View.GONE);
 
-        result = findViewById(R.id.resultDetection);
-        result.setVisibility(View.GONE);
         Intent intent=new Intent(this,CameraActivity.class);
         isSecondpress=false;
 
@@ -213,12 +211,11 @@ public class FruitDetection extends Activity implements CameraBridgeViewBase.CvC
                         if(i!=TextToSpeech.ERROR) {
                             Locale locale = new Locale("tr", "TR");
                             narrator3.setLanguage(locale);
-                            narrator3.speak(category, TextToSpeech.QUEUE_FLUSH,null);
+                            narrator3.speak(fruitMap.get(category), TextToSpeech.QUEUE_FLUSH,null);
                         }
                     }
                 });
-                result.setText(category);
-                // paint.setColor(colors.get(index));
+                paint.setColor(colors.get((int)Math.floor(Math.random()*10)));
                 paint.setStyle(Paint.Style.STROKE);
                 canvas.drawRect(location, paint);
                 paint.setStyle(Paint.Style.FILL);
@@ -244,7 +241,6 @@ public class FruitDetection extends Activity implements CameraBridgeViewBase.CvC
             isSecondpress=true;
 
             currentImage.setImageBitmap(mutable);
-            result.setVisibility(View.VISIBLE);
 
             model.close();
         } catch (IOException e) {
