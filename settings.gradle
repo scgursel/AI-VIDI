@@ -13,6 +13,5 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "Testdb"
-include ':libraries:opencv'
 include ':app'
 include ':opencv'
