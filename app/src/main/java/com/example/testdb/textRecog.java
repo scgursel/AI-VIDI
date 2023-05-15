@@ -134,12 +134,12 @@ public class textRecog extends AppCompatActivity implements CameraBridgeViewBase
                                 .addOnSuccessListener(new OnSuccessListener<Text>() {
                                     @Override
                                     public void onSuccess(Text text) {
-                                        textView.setText(text.getText());
+                                        textView.setText(text.getText().toLowerCase());
                                         String filename = "Belge";
                                         SaveText saveText = new SaveText((String) textView.getText(), filename);
                                         SaveTextRepository saveTextRepository = new SaveTextRepository(getApplicationContext());
                                         saveTextRepository.InsertTask(saveText);
-                                        Log.d(TAG, "onSuccess: "+ text);;
+                                        Log.d(TAG, "onSuccess: "+ text.toString().toLowerCase());;
                                         narrator=new TextToSpeech(textRecog.this, new TextToSpeech.OnInitListener() {
                                             @Override
                                             public void onInit(int i) {
@@ -151,7 +151,6 @@ public class textRecog extends AppCompatActivity implements CameraBridgeViewBase
                                                 }
                                             }
                                         });
-                                        setContentView(R.layout.activity_classificationimport);
                                     }
                                 })
                                 .addOnFailureListener(new OnFailureListener() {
@@ -170,6 +169,7 @@ public class textRecog extends AppCompatActivity implements CameraBridgeViewBase
                                         });
                                     }
                                 });
+                        isSecondpress=true;
                     }
                     return true;
                 }

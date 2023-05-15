@@ -290,6 +290,8 @@ public class FruitDetection extends Activity implements CameraBridgeViewBase.CvC
     }
     public void onCameraViewStopped(){
         mRgba.release();
+        mOpenCvCameraView.setVisibility(View.GONE);
+
     }
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame){
         mRgba=inputFrame.rgba();

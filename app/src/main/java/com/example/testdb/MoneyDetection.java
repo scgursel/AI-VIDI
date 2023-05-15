@@ -64,6 +64,7 @@ public class MoneyDetection extends Activity implements CameraBridgeViewBase.CvC
 
     private ImageView captureButton;
     private TextView textView;
+    private TextView backgr;
     private Bitmap bitmap=null;
     private ImageView currentImage;
     private TextView result;
@@ -130,8 +131,9 @@ public class MoneyDetection extends Activity implements CameraBridgeViewBase.CvC
         captureButton = findViewById(R.id.cptr);
         currentImage = findViewById(R.id.crntImg);
         textView.setVisibility(View.GONE);
-
+        backgr = findViewById(R.id.text_view);
         isSecondpress=false;
+        mOpenCvCameraView.setMaxFrameSize(100,100);
         Intent intent=new Intent(this,CameraActivity.class);
 
         captureButton.setOnTouchListener(new View.OnTouchListener() {
@@ -233,6 +235,7 @@ public class MoneyDetection extends Activity implements CameraBridgeViewBase.CvC
             }
 
             isSecondpress=true;
+
             currentImage.setImageBitmap(mutable);
 
             model.close();
@@ -289,6 +292,7 @@ public class MoneyDetection extends Activity implements CameraBridgeViewBase.CvC
     }
     public void onCameraViewStopped(){
         mRgba.release();
+        mOpenCvCameraView.setVisibility(View.GONE);
     }
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame){
         mRgba=inputFrame.rgba();

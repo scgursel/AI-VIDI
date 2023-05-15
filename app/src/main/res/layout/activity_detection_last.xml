@@ -2,28 +2,29 @@
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/black"
     tools:context=".textRecog">
 
 
     <org.opencv.android.JavaCameraView
         android:id="@+id/frame_surface"
         android:layout_width="match_parent"
-        android:layout_height="567dp" />
+
+        android:layout_height="530dp" />
 
 
     <ImageView
         android:id="@+id/crntImg"
         android:layout_width="match_parent"
-        android:layout_height="568dp"
+        android:layout_height="match_parent"
         android:contentDescription="@string/app_name" />
 
     <TextView
         android:id="@+id/text_view"
         android:layout_width="match_parent"
-        android:layout_height="568dp"
+        android:layout_height="532dp"
         android:background="@color/white" />
 
     <LinearLayout

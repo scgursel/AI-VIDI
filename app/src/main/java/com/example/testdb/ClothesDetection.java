@@ -301,6 +301,8 @@ public class ClothesDetection extends Activity implements CameraBridgeViewBase.C
     }
     public void onCameraViewStopped(){
         mRgba.release();
+        mOpenCvCameraView.setVisibility(View.GONE);
+
     }
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame){
         mRgba=inputFrame.rgba();
