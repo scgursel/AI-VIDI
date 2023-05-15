@@ -46,7 +46,6 @@ import java.util.Locale;
 
 public class textRecog extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2{
     private static final String TAG="TextActivity";
-    String b;
     private TextToSpeech  narrator;
     private Mat mRgba;
     private Mat mGray;
@@ -55,7 +54,8 @@ public class textRecog extends AppCompatActivity implements CameraBridgeViewBase
     private ImageView captureButton;
     private TextView textView;
     private Bitmap bitmap=null;
-    private ImageView currentImage;
+    boolean isSecondpress=false;
+
     private String camOrRecog="camera";
     private BaseLoaderCallback mLoaderCallback =new BaseLoaderCallback(this) {
         @Override
@@ -99,6 +99,8 @@ public class textRecog extends AppCompatActivity implements CameraBridgeViewBase
         textView = findViewById(R.id.textView);
         captureButton = findViewById(R.id.capture);
         textView.setVisibility(View.GONE);
+        Intent intent=new Intent(this,CameraActivity.class);
+        isSecondpress=false;
 
         captureButton.setOnTouchListener(new View.OnTouchListener() {
             @SuppressLint("ClickableViewAccessibility")
@@ -109,6 +111,14 @@ public class textRecog extends AppCompatActivity implements CameraBridgeViewBase
                     return true;
                 }
                 if(motionEvent.getAction() == MotionEvent.ACTION_UP){
+                    if (isSecondpress){
+                        finish();
+                        intent.addCategory(Intent.CATEGORY_HOME);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(intent);
+                        finish();
+
+                    }
                     if (camOrRecog == "camera"){
                         textView.setVisibility(View.VISIBLE);
                         Mat a = mRgba.t();
@@ -147,6 +157,17 @@ public class textRecog extends AppCompatActivity implements CameraBridgeViewBase
                                 .addOnFailureListener(new OnFailureListener() {
                                     @Override
                                     public void onFailure(@NonNull Exception e) {
+                                        narrator=new TextToSpeech(textRecog.this, new TextToSpeech.OnInitListener() {
+                                            @Override
+                                            public void onInit(int i) {
+                                                if(i!=TextToSpeech.ERROR) {
+                                                    Locale locale = new Locale("tr", "TR");
+                                                    narrator.setLanguage(locale);
+                                                    narrator.speak("Tespit edilemedi tekrar deneyin "+textView.getText(), TextToSpeech.QUEUE_FLUSH,null);
+
+                                                }
+                                            }
+                                        });
                                     }
                                 });
                     }

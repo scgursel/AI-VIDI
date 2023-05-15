@@ -2,6 +2,7 @@ package com.example.testdb;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -46,8 +47,10 @@ import org.tensorflow.lite.support.image.ops.ResizeOp;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class FruitDetection extends Activity implements CameraBridgeViewBase.CvCameraViewListener2{
     private static final String TAG="ParaActivity";
@@ -57,6 +60,7 @@ public class FruitDetection extends Activity implements CameraBridgeViewBase.CvC
     private CameraBridgeViewBase mOpenCvCameraView;
 
 
+    boolean isSecondpress=false;
 
     private ImageView captureButton;
     private TextView textView;
@@ -69,11 +73,19 @@ public class FruitDetection extends Activity implements CameraBridgeViewBase.CvC
             Color.BLUE, Color.GREEN, Color.RED, Color.CYAN, Color.GRAY,
             Color.BLACK, Color.DKGRAY, Color.MAGENTA, Color.YELLOW, Color.RED
     );
-    List<String> labels;
-    ImageProcessor imageProcessor = new ImageProcessor.Builder()
-            .add(new ResizeOp(320, 320, ResizeOp.ResizeMethod.BILINEAR))
-            .build();
+    Map<String, String> fruitMap = new HashMap<String, String>() {{
+        put("apple","elma");
+        put("banana","muz");
+        put("orange","portakal");
+        put("cucumber","salatalık");
+        put("pineapple","ananas");
+        put("carrot","havuç");
+        put("lemon","limon");
 
+
+
+
+    }};
 
 
     private BaseLoaderCallback mLoaderCallback =new BaseLoaderCallback(this) {
@@ -104,15 +116,6 @@ public class FruitDetection extends Activity implements CameraBridgeViewBase.CvC
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
-        try {
-            labels = FileUtil.loadLabels(this, "label.txt");
-        } catch (IOException e) {
-            Log.d(TAG, "onCreate: .txt init failed");
-
-            throw new RuntimeException(e);
-        }
-
         int MY_PERMISSIONS_REQUEST_CAMERA=0;
         // if camera permission is not given it will ask for it on device
         if (ContextCompat.checkSelfPermission(FruitDetection.this, Manifest.permission.CAMERA)
@@ -132,6 +135,8 @@ public class FruitDetection extends Activity implements CameraBridgeViewBase.CvC
 
         result = findViewById(R.id.resultDetection);
         result.setVisibility(View.GONE);
+        Intent intent=new Intent(this,CameraActivity.class);
+        isSecondpress=false;
 
 
         captureButton.setOnTouchListener(new View.OnTouchListener() {
@@ -141,6 +146,14 @@ public class FruitDetection extends Activity implements CameraBridgeViewBase.CvC
                     return true;
                 }
                 if(motionEvent.getAction() == MotionEvent.ACTION_UP){
+                    if (isSecondpress){
+                        finish();
+                        intent.addCategory(Intent.CATEGORY_HOME);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(intent);
+                        finish();
+
+                    }
                     if (camOrRecog == "camera"){
                         Mat a = mRgba.t();
                         Core.flip(a,mRgba,1);
@@ -164,18 +177,13 @@ public class FruitDetection extends Activity implements CameraBridgeViewBase.CvC
         try {
             AndroidFruit model = AndroidFruit.newInstance(FruitDetection.this);
 
-            // Creates inputs for reference.
             TensorImage image = TensorImage.fromBitmap(bitmap);
 
-            // Runs model inference and gets result.
             AndroidFruit.Outputs outputs = model.process(image);
             AndroidFruit.DetectionResult detectionResult = outputs.getDetectionResultList().get(0);
 
-            // Gets result from DetectionResult.
             List<AndroidFruit.DetectionResult> detectionResultList = outputs.getDetectionResultList();
 
-            float[] locations = outputs.getCategoryAsTensorBuffer().getFloatArray();
-            float[] scores = outputs.getScoreAsTensorBuffer().getFloatArray();
             RectF location = detectionResult.getLocationAsRectF();
             String category = detectionResult.getCategoryAsString();
             float score = detectionResult.getScoreAsFloat();
@@ -184,7 +192,6 @@ public class FruitDetection extends Activity implements CameraBridgeViewBase.CvC
                 Log.d(TAG, "getPredictions: "+ detectionResultList.get(i).getCategoryAsString()+"="+detectionResultList.get(i).getScoreAsFloat());
             }
 
-            // Releases model resources if no longer used.
             Log.d(TAG, "getPredictions: "+category+score);
 
 
@@ -199,35 +206,42 @@ public class FruitDetection extends Activity implements CameraBridgeViewBase.CvC
             Paint paint = new Paint();
             paint.setTextSize(h/15f);
             paint.setStrokeWidth(h/85f);
-            for (int index = 0; index < scores.length; index++) {
-                float fl = scores[index];
-                if (fl > 0.4) {
-                    narrator3=new TextToSpeech(this, new TextToSpeech.OnInitListener() {
-                        @Override
-                        public void onInit(int i) {
-                            if(i!=TextToSpeech.ERROR) {
-                                Locale locale = new Locale("tr", "TR");
-                                narrator3.setLanguage(locale);
-                                narrator3.speak(category, TextToSpeech.QUEUE_FLUSH,null);
-                            }
+            if (score > 0.4) {
+                narrator3=new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+                    @Override
+                    public void onInit(int i) {
+                        if(i!=TextToSpeech.ERROR) {
+                            Locale locale = new Locale("tr", "TR");
+                            narrator3.setLanguage(locale);
+                            narrator3.speak(category, TextToSpeech.QUEUE_FLUSH,null);
                         }
-                    });
-                    /////////////////////////////////////////////
-
-                    result.setText(category);
-                    int x = index * 4;
-                    paint.setColor(colors.get(index));
-                    paint.setStyle(Paint.Style.STROKE);
-                    canvas.drawRect(location, paint);
-                    paint.setStyle(Paint.Style.FILL);
-                    canvas.drawText(
-                            category + " " + Float.toString(fl),
-                            locations[x+1] * w,
-                            locations[x] * h,
-                            paint
-                    );
-                }
+                    }
+                });
+                result.setText(category);
+                // paint.setColor(colors.get(index));
+                paint.setStyle(Paint.Style.STROKE);
+                canvas.drawRect(location, paint);
+                paint.setStyle(Paint.Style.FILL);
+                canvas.drawText(
+                        fruitMap.get(category),
+                        location.top,
+                        location.left,
+                        paint
+                );
             }
+            else {
+                narrator3=new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+                    @Override
+                    public void onInit(int i) {
+                        if(i!=TextToSpeech.ERROR) {
+                            Locale locale = new Locale("tr", "TR");
+                            narrator3.setLanguage(locale);
+                            narrator3.speak("tespit edilemedi, tekrar deneyin", TextToSpeech.QUEUE_FLUSH,null);
+                        }
+                    }
+                });
+            }
+            isSecondpress=true;
 
             currentImage.setImageBitmap(mutable);
             result.setVisibility(View.VISIBLE);

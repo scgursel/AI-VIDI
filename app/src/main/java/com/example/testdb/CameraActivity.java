@@ -1,67 +1,30 @@
 package com.example.testdb;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.Point;
-import android.graphics.Rect;
-import android.os.Build;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.mlkit.vision.common.InputImage;
-import com.google.mlkit.vision.text.Text;
-import com.google.mlkit.vision.text.TextRecognition;
-import com.google.mlkit.vision.text.TextRecognizer;
-import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
-
-import org.tensorflow.lite.DataType;
-import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Locale;
 
-public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE CAMERA WHEN DONE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    //
-    // EARLIER ISSUE WAS WITH CAMERA PERMISSIONS. NOW FIXED
-    // STILL GOTTA WORK ON PERMS, CURRENTLY REQUIRED TO ACCEPT PERMS THE FIRST TIME, HARD IF YOU ARE BLIND, CHECK PERMISSION OVERRIDES.
-    private TextToSpeech  narrator3,narrator,narrator7;
-    private String narration=("Kamerayı başlatmak için ekrana dokunun." +
+public class CameraActivity extends AppCompatActivity {
+    private TextToSpeech  narrator3;
+    private final String narration=(
+            "Para okutmak için para " +
+            "Sebze okutmak için sebze " +
+            "kıyafet okutmak için kıyafet diyin" +
             "Anasayfaya dönmek için anasayfa diyin." +
             "Kaydetmek için kaydetme işlemi diyin."+
             "Kayıtlara ulaşmak için kayıtlara bak diyin."+
             "Ayarlara ulaşmak için ayarlar diyin"+
-            "Tekrar dinlemek için tekrar dinle diyin.");
-
-    Button camera, gallery;
-    ImageView imageView;
-
-    TextView result;
-    int imageH= 224;
-    int imageW= 224;
-    int belgeRequest = 2;
-    int paraRequest = 3;
-    Bitmap imageBitmap;
+            "Tekrar dinlemek için tekrar dinle diyin."
+    );
     private static final String TAG="CameraActivity";
 
 
@@ -69,15 +32,6 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
     public CameraActivity(){
         Log.i(TAG,"Instantiated new "+this.getClass());
     }
-
-    //
-    //
-    // SOMETHING WRONG WITH THIS cameraId=cameraManager.getCameraIdList()[0];
-    // OR
-    // THIS
-    // cameraManager.openCamera(cameraId, stateCallbackForCamera, null);
-    // cameraManager may be null? DUNNO IF INITIALIZATION IS FUCKED.
-
 
 
     @Override
@@ -96,7 +50,6 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
 
 
 
-        ///////////////////////////////////////////////
         narrator3=new TextToSpeech(this, new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int i) {
@@ -107,23 +60,10 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
                 }
             }
         });
-        /////////////////////////////////////////////
 
 
-        //region import from imageclassification
-
-        result = findViewById(R.id.result);
-        imageView = findViewById(R.id.imageView);
-
-        //endregion
 
     }
-
-
-
-
-
-
 
     public void onPause() {
         if(narrator3 !=null){
@@ -181,17 +121,37 @@ public class CameraActivity extends AppCompatActivity { ////// REMEMBER TO CLOSE
                     startActivity(new Intent(this,SettingsActivity.class));
                     break;
                 case "para":
-                    startActivity(new Intent(this,MoneyDetection.class));
+                case "Para":
+                    Intent intent1=new Intent(this,MoneyDetection.class);
+                    intent1.addCategory(Intent.CATEGORY_HOME);
+                    intent1.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent1);
+                    finish();
                     break;
                 case "sebze":
-                    startActivity(new Intent(this,FruitDetection.class));
-                    break;
-               case "kıyafet":
-                    startActivity(new Intent(this,ClothesDetection.class));
+                    Intent intent2=new Intent(this,FruitDetection.class);
+                    intent2.addCategory(Intent.CATEGORY_HOME);
+                    intent2.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent2);
+                    finish();
                     break;
 
+                case "kıyafet":
+                case "Kıyafet":
+
+                    Intent intent3=new Intent(this,ClothesDetection.class);
+                   intent3.addCategory(Intent.CATEGORY_HOME);
+                   intent3.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                   startActivity(intent3);
+                   finish();
+                   break;
                 case "belge":
-                    startActivity(new Intent(this, textRecog.class));
+                case "Belge":
+                    Intent intent4=new Intent(this,textRecog.class);
+                    intent4.addCategory(Intent.CATEGORY_HOME);
+                    intent4.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent4);
+                    finish();
                     break;
                 default:
                     narrator3.speak("Anlaşılmadı, tekrar söyleyin.", TextToSpeech.QUEUE_FLUSH, null);

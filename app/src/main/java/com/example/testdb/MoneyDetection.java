@@ -2,6 +2,7 @@ package com.example.testdb;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -22,14 +23,15 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.example.testdb.ml.Para;
 
 
-import com.example.testdb.ml.AndroidFruit;
+
+import com.example.testdb.ml.Android4;
 import com.google.mlkit.vision.common.InputImage;
 
 import org.opencv.android.BaseLoaderCallback;
@@ -43,14 +45,14 @@ import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.tensorflow.lite.support.common.FileUtil;
-import org.tensorflow.lite.support.image.ImageProcessor;
 import org.tensorflow.lite.support.image.TensorImage;
-import org.tensorflow.lite.support.image.ops.ResizeOp;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class MoneyDetection extends Activity implements CameraBridgeViewBase.CvCameraViewListener2{
     private static final String TAG="MoneyActivity";
@@ -67,15 +69,21 @@ public class MoneyDetection extends Activity implements CameraBridgeViewBase.CvC
     private TextView result;
     private String camOrRecog="camera";
     // deneme
-
+    boolean isSecondpress=false;
     List<Integer> colors = Arrays.asList(
             Color.BLUE, Color.GREEN, Color.RED, Color.CYAN, Color.GRAY,
             Color.BLACK, Color.DKGRAY, Color.MAGENTA, Color.YELLOW, Color.RED
     );
-    List<String> labels;
-    ImageProcessor imageProcessor = new ImageProcessor.Builder()
-            .add(new ResizeOp(320, 320, ResizeOp.ResizeMethod.BILINEAR))
-            .build();
+    Map<String, String> liraMap = new HashMap<String, String>() {{
+        put("5TLira", "5 lira");
+        put("10TLira", "10 lira");
+        put("20TLira", "20 lira");
+        put("50TLira", "50 lira");
+        put("100TLira", "100 lira");
+        put("200TLira", "200 lira");
+
+    }};
+
 
     private BaseLoaderCallback mLoaderCallback =new BaseLoaderCallback(this) {
         @Override
@@ -102,17 +110,10 @@ public class MoneyDetection extends Activity implements CameraBridgeViewBase.CvC
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
-        try {
-            labels = FileUtil.loadLabels(this, "label.txt");
-        } catch (IOException e) {
-            Log.d(TAG, "onCreate: .txt init failed");
-
-            throw new RuntimeException(e);
-        }
 
         int MY_PERMISSIONS_REQUEST_CAMERA=0;
         // if camera permission is not given it will ask for it on device
@@ -132,7 +133,8 @@ public class MoneyDetection extends Activity implements CameraBridgeViewBase.CvC
 
         result = findViewById(R.id.resultDetection);
         result.setVisibility(View.GONE);
-
+        isSecondpress=false;
+        Intent intent=new Intent(this,CameraActivity.class);
 
         captureButton.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -141,6 +143,15 @@ public class MoneyDetection extends Activity implements CameraBridgeViewBase.CvC
                     return true;
                 }
                 if(motionEvent.getAction() == MotionEvent.ACTION_UP){
+                    if (isSecondpress){
+                        Log.d(TAG, "onTouch: "+isSecondpress);
+
+                        intent.addCategory(Intent.CATEGORY_HOME);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(intent);
+                        finish();
+
+                    }
                     if (camOrRecog == "camera"){
                         Mat a = mRgba.t();
                         Core.flip(a,mRgba,1);
@@ -150,7 +161,6 @@ public class MoneyDetection extends Activity implements CameraBridgeViewBase.CvC
                         Utils.matToBitmap(mRgba,bitmap);
                         mOpenCvCameraView.disableView();
                         camOrRecog="recog";
-                        InputImage inputImage = InputImage.fromBitmap(bitmap,0);
                         getPredictions(bitmap);
 
                     }
@@ -163,73 +173,69 @@ public class MoneyDetection extends Activity implements CameraBridgeViewBase.CvC
     private void getPredictions(Bitmap bitmap) {
 
         try {
-            Para model = Para.newInstance(MoneyDetection.this);
+            Android4 model = Android4.newInstance(MoneyDetection.this);
             Log.d(TAG, "getPredictions: model inited money");
-            // Creates inputs for reference.
+
             TensorImage image = TensorImage.fromBitmap(bitmap);
 
-            // Runs model inference and gets result.
-            Para.Outputs outputs = model.process(image);
-            Para.DetectionResult detectionResult = outputs.getDetectionResultList().get(0);
+            Android4.Outputs outputs = model.process(image);
+            Android4.DetectionResult detectionResult = outputs.getDetectionResultList().get(0);
+            List<Android4.DetectionResult> detectionResultList = outputs.getDetectionResultList();
 
-            // Gets result from DetectionResult.
-            List<Para.DetectionResult> detectionResultList = outputs.getDetectionResultList();
-
-            float[] locations = outputs.getCategoryAsTensorBuffer().getFloatArray();
-            float[] scores = outputs.getScoreAsTensorBuffer().getFloatArray();
             RectF location = detectionResult.getLocationAsRectF();
             String category = detectionResult.getCategoryAsString();
             float score = detectionResult.getScoreAsFloat();
 
             for (int i = 0; i<detectionResultList.size(); i++){
-                Log.d(TAG, "getPredictions: "+ detectionResultList.get(i).getCategoryAsString()+"="+detectionResultList.get(i).getScoreAsFloat());
+                Log.d(TAG, "getPredictions: tüm sonuçlar"+ detectionResultList.get(i).getCategoryAsString()+"="+detectionResultList.get(i).getScoreAsFloat());
             }
 
             // Releases model resources if no longer used.
             Log.d(TAG, "getPredictions: "+category+score);
-
-
-
             Bitmap mutable = bitmap.copy(Bitmap.Config.ARGB_8888, true);
-
             Canvas canvas = new Canvas(mutable);
             int h = mutable.getHeight();
             int w = mutable.getWidth();
-
-
             Paint paint = new Paint();
             paint.setTextSize(h/15f);
             paint.setStrokeWidth(h/85f);
-            for (int index = 0; index < scores.length; index++) {
-                float fl = scores[index];
-                if (fl > 0.4) {
-                    narrator3=new TextToSpeech(this, new TextToSpeech.OnInitListener() {
-                        @Override
-                        public void onInit(int i) {
-                            if(i!=TextToSpeech.ERROR) {
-                                Locale locale = new Locale("tr", "TR");
-                                narrator3.setLanguage(locale);
-                                narrator3.speak(category, TextToSpeech.QUEUE_FLUSH,null);
-                            }
+            if (score > 0.4) {
+                narrator3=new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+                    @Override
+                    public void onInit(int i) {
+                        if(i!=TextToSpeech.ERROR) {
+                            Locale locale = new Locale("tr", "TR");
+                            narrator3.setLanguage(locale);
+                            narrator3.speak(category, TextToSpeech.QUEUE_FLUSH,null);
                         }
-                    });
-                    /////////////////////////////////////////////
-
-                    result.setText(category);
-                    int x = index * 4;
-                    paint.setColor(colors.get(index));
-                    paint.setStyle(Paint.Style.STROKE);
-                    canvas.drawRect(location, paint);
-                    paint.setStyle(Paint.Style.FILL);
-                    canvas.drawText(
-                            category + " " + Float.toString(fl),
-                            locations[x+1] * w,
-                            locations[x] * h,
-                            paint
-                    );
-                }
+                    }
+                });
+                result.setText(category);
+                paint.setColor(colors.get((int)Math.floor(Math.random()*10)));
+                paint.setStyle(Paint.Style.STROKE);
+                canvas.drawRect(location, paint);
+                paint.setStyle(Paint.Style.FILL);
+                canvas.drawText(
+                        liraMap.get(category),
+                        location.top,
+                        location.left,
+                        paint
+                );
+            }
+            else {
+                narrator3=new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+                    @Override
+                    public void onInit(int i) {
+                        if(i!=TextToSpeech.ERROR) {
+                            Locale locale = new Locale("tr", "TR");
+                            narrator3.setLanguage(locale);
+                            narrator3.speak("tespit edilemedi, tekrar deneyin", TextToSpeech.QUEUE_FLUSH,null);
+                        }
+                    }
+                });
             }
 
+            isSecondpress=true;
             currentImage.setImageBitmap(mutable);
             result.setVisibility(View.VISIBLE);
 
@@ -277,7 +283,12 @@ public class MoneyDetection extends Activity implements CameraBridgeViewBase.CvC
 
     }
 
-    public void onCameraViewStarted(int width ,int height){
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+    }
+
+    public void onCameraViewStarted(int width , int height){
         mRgba=new Mat(height,width, CvType.CV_8UC4);
     }
     public void onCameraViewStopped(){
